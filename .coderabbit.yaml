@@ -1,0 +1,24 @@
+reviews:
+  pre_merge_checks:
+    title:
+      mode: "error"
+      requirements: |
+        PR title must follow the format: PR-[dev name]-[feature]
+
+        Requirements:
+        - Must start with "PR-"
+        - Followed by the developer name
+        - Followed by a hyphen
+        - Followed by the feature description
+        - Feature description must be hyphenated (use hyphens between words)
+        - Feature description must be 3 words or less
+
+        Examples of valid titles:
+        - PR-john-user-authentication
+        - PR-sarah-bug-fix
+        - PR-mike-api-integration-update
+
+        Examples of invalid titles:
+        - PR-john-this is a very long feature description (too many words)
+        - PR-john-user authentication (not hyphenated)
+        - john-user-auth (missing PR- prefix)
