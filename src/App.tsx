@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
 interface Rabbit {
@@ -9,7 +9,6 @@ interface Rabbit {
 }
 
 function App() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [rabbits, setRabbits] = useState<Rabbit[]>([
     { id: 1, x: 100, y: 100, speed: 0.05 },
     { id: 2, x: 200, y: 200, speed: 0.08 },
@@ -21,9 +20,18 @@ function App() {
     { id: 8, x: 450, y: 150, speed: 0.075 },
   ])
 
+  const mousePosRef = useRef({ x: 0, y: 0 })
+  const rabbitsRef = useRef(rabbits)
+  const animationFrameRef = useRef<number>()
+
+  // Keep rabbitsRef in sync with rabbits state
+  useEffect(() => {
+    rabbitsRef.current = rabbits
+  }, [rabbits])
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY })
+      mousePosRef.current = { x: e.clientX, y: e.clientY }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -31,23 +39,33 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRabbits((prevRabbits) =>
-        prevRabbits.map((rabbit) => {
-          const dx = mousePos.x - rabbit.x
-          const dy = mousePos.y - rabbit.y
+    const animate = () => {
+      const mousePos = mousePosRef.current
+      const currentRabbits = rabbitsRef.current
 
-          return {
-            ...rabbit,
-            x: rabbit.x + dx * rabbit.speed,
-            y: rabbit.y + dy * rabbit.speed,
-          }
-        })
-      )
-    }, 16) // ~60 FPS
+      const newRabbits = currentRabbits.map((rabbit) => {
+        const dx = mousePos.x - rabbit.x
+        const dy = mousePos.y - rabbit.y
 
-    return () => clearInterval(interval)
-  }, [mousePos])
+        return {
+          ...rabbit,
+          x: rabbit.x + dx * rabbit.speed,
+          y: rabbit.y + dy * rabbit.speed,
+        }
+      })
+
+      setRabbits(newRabbits)
+      animationFrameRef.current = requestAnimationFrame(animate)
+    }
+
+    animationFrameRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [])
 
   return (
     <div className="app">
