@@ -104,12 +104,12 @@ function App() {
         const dx = mousePos.x - rabbit.x
         const dy = mousePos.y - rabbit.y
 
-        // Add random wobble to make movement less uniform
-        const wobbleX = (Math.random() - 0.5) * 2
-        const wobbleY = (Math.random() - 0.5) * 2
+        // Add subtle random wobble to make movement less uniform
+        const wobbleX = (Math.random() - 0.5) * 0.3
+        const wobbleY = (Math.random() - 0.5) * 0.3
 
-        // Add slight random variation to speed for this frame
-        const speedVariation = 1 + (Math.random() - 0.5) * 0.3
+        // Add minimal random variation to speed for this frame
+        const speedVariation = 1 + (Math.random() - 0.5) * 0.05
 
         return {
           ...rabbit,
