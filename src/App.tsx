@@ -6,18 +6,19 @@ interface Rabbit {
   x: number
   y: number
   speed: number
+  isHovered: boolean
 }
 
 function App() {
   const [rabbits, setRabbits] = useState<Rabbit[]>([
-    { id: 1, x: 100, y: 100, speed: 0.008 },
-    { id: 2, x: 200, y: 200, speed: 0.015 },
-    { id: 3, x: 300, y: 150, speed: 0.012 },
-    { id: 4, x: 400, y: 300, speed: 0.02 },
-    { id: 5, x: 500, y: 250, speed: 0.01 },
-    { id: 6, x: 150, y: 400, speed: 0.025 },
-    { id: 7, x: 350, y: 350, speed: 0.018 },
-    { id: 8, x: 450, y: 150, speed: 0.022 },
+    { id: 1, x: 100, y: 100, speed: 0.008, isHovered: false },
+    { id: 2, x: 200, y: 200, speed: 0.015, isHovered: false },
+    { id: 3, x: 300, y: 150, speed: 0.012, isHovered: false },
+    { id: 4, x: 400, y: 300, speed: 0.02, isHovered: false },
+    { id: 5, x: 500, y: 250, speed: 0.01, isHovered: false },
+    { id: 6, x: 150, y: 400, speed: 0.025, isHovered: false },
+    { id: 7, x: 350, y: 350, speed: 0.018, isHovered: false },
+    { id: 8, x: 450, y: 150, speed: 0.022, isHovered: false },
   ])
 
   const mousePosRef = useRef({ x: 0, y: 0 })
@@ -40,13 +41,18 @@ function App() {
 
   useEffect(() => {
     // Font size is 2rem = 32px, so radius is approximately half of that
-    const RABBIT_RADIUS = 16 // Half of the emoji's rendered size (2rem/2)
+    const BASE_RABBIT_RADIUS = 16 // Half of the emoji's rendered size (2rem/2)
+    const HOVER_SCALE = 1.2 // Scale factor from CSS hover state
 
     const checkCollision = (rabbit1: Rabbit, rabbit2: Rabbit) => {
+      // Compute effective radius for each rabbit based on hover state
+      const radius1 = BASE_RABBIT_RADIUS * (rabbit1.isHovered ? HOVER_SCALE : 1)
+      const radius2 = BASE_RABBIT_RADIUS * (rabbit2.isHovered ? HOVER_SCALE : 1)
+      
       const dx = rabbit1.x - rabbit2.x
       const dy = rabbit1.y - rabbit2.y
       const distance = Math.sqrt(dx * dx + dy * dy)
-      return distance < RABBIT_RADIUS * 2
+      return distance < radius1 + radius2
     }
 
     const resolveCollisions = (rabbits: Rabbit[]) => {
@@ -58,13 +64,17 @@ function App() {
           const rabbit2 = resolvedRabbits[j]
 
           if (checkCollision(rabbit1, rabbit2)) {
+            // Compute effective radii for collision resolution
+            const radius1 = BASE_RABBIT_RADIUS * (rabbit1.isHovered ? HOVER_SCALE : 1)
+            const radius2 = BASE_RABBIT_RADIUS * (rabbit2.isHovered ? HOVER_SCALE : 1)
+            
             const dx = rabbit2.x - rabbit1.x
             const dy = rabbit2.y - rabbit1.y
             const distance = Math.sqrt(dx * dx + dy * dy)
 
             if (distance === 0) continue // Skip if rabbits are at exact same position
 
-            const overlap = RABBIT_RADIUS * 2 - distance
+            const overlap = radius1 + radius2 - distance
             const moveX = (dx / distance) * overlap * 0.5
             const moveY = (dy / distance) * overlap * 0.5
 
@@ -122,6 +132,14 @@ function App() {
     }
   }, [])
 
+  const handleRabbitHover = (id: number, isHovered: boolean) => {
+    setRabbits((prevRabbits) =>
+      prevRabbits.map((rabbit) =>
+        rabbit.id === id ? { ...rabbit, isHovered } : rabbit
+      )
+    )
+  }
+
   return (
     <div className="app">
       <h1 className="title">Move your mouse around!</h1>
@@ -134,6 +152,8 @@ function App() {
               left: `${rabbit.x}px`,
               top: `${rabbit.y}px`,
             }}
+            onMouseEnter={() => handleRabbitHover(rabbit.id, true)}
+            onMouseLeave={() => handleRabbitHover(rabbit.id, false)}
           >
             🐰
           </div>
