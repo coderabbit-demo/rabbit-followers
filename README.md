@@ -24,3 +24,9 @@ The app will start at [http://localhost:5173/](http://localhost:5173/)
 ## How to Use
 
 Simply move your mouse around the screen and watch the rabbits chase after it! Each rabbit moves at a different speed, creating a fun trailing effect.
+
+## Features
+
+- Smooth mouse tracking
+- Multiple rabbits with varying speeds
+- Responsive design
