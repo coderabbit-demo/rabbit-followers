@@ -9,6 +9,15 @@ interface Rabbit {
   isHovered: boolean
 }
 
+/**
+ * Main interactive React component that renders an animated scene of rabbits.
+ *
+ * Tracks mouse movement and animates rabbits to follow the cursor with subtle wobble
+ * and small per-frame speed variation, while resolving pairwise collisions and
+ * applying a hover scale when individual rabbits are hovered.
+ *
+ * @returns The component's JSX element containing the interactive rabbit scene
+ */
 function App() {
   const [rabbits, setRabbits] = useState<Rabbit[]>([
     { id: 1, x: 100, y: 100, speed: 0.008, isHovered: false },
