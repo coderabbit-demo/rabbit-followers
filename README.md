@@ -30,3 +30,4 @@ Simply move your mouse around the screen and watch the rabbits chase after it! E
 - Smooth mouse tracking
 - Multiple rabbits with varying speeds
 - Responsive design
+- Green background theme
