@@ -2,6 +2,12 @@
 
 # Script to create a branch, commit changes, push to all remotes, and create PRs
 # Usage: ./create-pr.sh <branch-name> <commit-message> <pr-title> [pr-description]
+#
+# Prerequisites:
+# - Bitbucket: API key at ~/.bitbucket-api-key (required for BB PRs)
+# - GitHub: gh CLI (preferred) or token at ~/.github-token
+# - GitLab: glab CLI (required for GL PRs)
+# - Azure DevOps: az CLI (preferred) or PAT token at ~/.ado-token
 
 set -e
 
@@ -95,30 +101,22 @@ fi
 # Create PR on Bitbucket
 if [ -n "$BB_API_KEY" ]; then
     echo -e "  Creating PR on ${YELLOW}Bitbucket${NC}..."
+    # Escape special characters in description for JSON
+    PR_DESC_ESCAPED=$(echo "$PR_DESCRIPTION_FULL" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed '$ s/\\n$//')
+    PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
+
     BB_RESPONSE=$(curl -s -X POST \
       -u "john@turbulent.cloud:$BB_API_KEY" \
       -H "Content-Type: application/json" \
       https://api.bitbucket.org/2.0/repositories/turbulentcloud/rabbit-followers/pullrequests \
-      -d "{
-        \"title\": \"$PR_TITLE\",
-        \"source\": {
-          \"branch\": {
-            \"name\": \"$BRANCH_NAME\"
-          }
-        },
-        \"destination\": {
-          \"branch\": {
-            \"name\": \"$BASE_BRANCH\"
-          }
-        },
-        \"description\": \"$PR_DESCRIPTION_FULL\"
-      }")
+      -d "{\"title\":\"$PR_TITLE_ESCAPED\",\"source\":{\"branch\":{\"name\":\"$BRANCH_NAME\"}},\"destination\":{\"branch\":{\"name\":\"$BASE_BRANCH\"}},\"description\":\"$PR_DESC_ESCAPED\"}")
 
-    BB_PR_URL=$(echo "$BB_RESPONSE" | grep -o '"html":{"href":"[^"]*"' | head -1 | sed 's/"html":{"href":"//;s/"$//')
+    BB_PR_URL=$(echo "$BB_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('links', {}).get('html', {}).get('href', ''))" 2>/dev/null)
     if [ -n "$BB_PR_URL" ]; then
         echo -e "  ${GREEN}✓ Bitbucket PR created: $BB_PR_URL${NC}"
     else
         echo -e "  ${RED}✗ Failed to create Bitbucket PR${NC}"
+        echo -e "  ${RED}Response: $BB_RESPONSE${NC}"
     fi
 else
     echo -e "  ${YELLOW}⊘ Skipping Bitbucket PR (no API key)${NC}"
@@ -196,8 +194,27 @@ if command -v az &> /dev/null; then
     else
         echo -e "  ${RED}✗ Failed to create Azure DevOps PR: $ADO_PR_URL${NC}"
     fi
+elif [ -f ~/.ado-token ]; then
+    # Fallback to REST API if az CLI not available
+    ADO_TOKEN=$(cat ~/.ado-token)
+    PR_DESC_ESCAPED=$(echo "$PR_DESCRIPTION_FULL" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed '$ s/\\n$//')
+    PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
+
+    ADO_RESPONSE=$(curl -s -X POST \
+      -u ":$ADO_TOKEN" \
+      -H "Content-Type: application/json" \
+      https://dev.azure.com/turbulentcloud/turbulentcloud/_apis/git/repositories/rabbit-followers/pullrequests?api-version=7.0 \
+      -d "{\"sourceRefName\":\"refs/heads/$BRANCH_NAME\",\"targetRefName\":\"refs/heads/$BASE_BRANCH\",\"title\":\"$PR_TITLE_ESCAPED\",\"description\":\"$PR_DESC_ESCAPED\"}")
+
+    ADO_PR_URL=$(echo "$ADO_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('_links', {}).get('web', {}).get('href', ''))" 2>/dev/null)
+    if [ -n "$ADO_PR_URL" ]; then
+        echo -e "  ${GREEN}✓ Azure DevOps PR created: $ADO_PR_URL${NC}"
+    else
+        echo -e "  ${RED}✗ Failed to create Azure DevOps PR${NC}"
+        echo -e "  ${RED}Response: $ADO_RESPONSE${NC}"
+    fi
 else
-    echo -e "  ${YELLOW}⊘ Skipping Azure DevOps PR (az CLI not found)${NC}"
+    echo -e "  ${YELLOW}⊘ Skipping Azure DevOps PR (az CLI not found and no token at ~/.ado-token)${NC}"
 fi
 
 echo ""
