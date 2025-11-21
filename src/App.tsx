@@ -54,7 +54,7 @@ function App() {
     id: 1,
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
-    speed: 0.05,
+    speed: 0.035,
     targetRabbitId: null,
     state: 'idle'
   })
@@ -168,10 +168,27 @@ function App() {
 
     const createEatingEffect = (x: number, y: number) => {
       const particleEmojis = ['🪶', '💨', '✨', '💫', '☁️']
+      const bloodEmojis = ['🩸', '💉', '🔴']
       const newParticles: ExplosionParticle[] = []
 
-      for (let i = 0; i < 12; i++) {
-        const angle = (Math.PI * 2 * i) / 12
+      // Add blood splatter particles
+      for (let i = 0; i < 20; i++) {
+        const angle = (Math.PI * 2 * i) / 20
+        const speed = 3 + Math.random() * 4
+        newParticles.push({
+          id: `blood-${Date.now()}-${i}`,
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          emoji: bloodEmojis[Math.floor(Math.random() * bloodEmojis.length)]
+        })
+      }
+
+      // Add some feather particles
+      for (let i = 0; i < 8; i++) {
+        const angle = (Math.PI * 2 * i) / 8
         const speed = 1.5 + Math.random() * 2.5
         newParticles.push({
           id: `eating-${Date.now()}-${i}`,
