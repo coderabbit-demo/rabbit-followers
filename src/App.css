@@ -9,10 +9,10 @@
   height: 100vh;
   overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(34, 139, 34, 0.1) 0%, rgba(0, 100, 0, 0.1) 100%),
-    radial-gradient(circle at 20% 50%, rgba(60, 179, 113, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(46, 125, 50, 0.3) 0%, transparent 50%),
-    linear-gradient(to bottom, #5cb85c 0%, #4a9d4a 50%, #3d8b3d 100%);
+    linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(0, 0, 139, 0.1) 100%),
+    radial-gradient(circle at 20% 50%, rgba(70, 130, 180, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(65, 105, 225, 0.3) 0%, transparent 50%),
+    linear-gradient(to bottom, #4a90e2 0%, #357abd 50%, #2e6da4 100%);
   background-size: 100% 100%, 200% 200%, 200% 200%, 100% 100%;
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="28" font-size="28">🥕</text></svg>') 16 16, auto;
   position: relative;
@@ -40,7 +40,8 @@
   position: absolute;
   font-size: 2rem;
   transform: translate(-50%, -50%);
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   user-select: none;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
   transition: transform 0.1s ease;
@@ -48,4 +49,55 @@
 
 .rabbit:hover {
   transform: translate(-50%, -50%) scale(1.2);
+}
+
+.explosion-particle {
+  position: absolute;
+  font-size: 1.5rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  z-index: 100;
+}
+
+.eagle {
+  position: absolute;
+  font-size: 2.5rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.4));
+  transition: transform 0.2s ease, filter 0.2s ease;
+  z-index: 50;
+}
+
+.eagle.idle {
+  animation: eagleIdle 3s ease-in-out infinite;
+}
+
+.eagle.hunting {
+  transform: translate(-50%, -50%) scale(1.1);
+  filter: drop-shadow(3px 3px 8px rgba(255, 215, 0, 0.5));
+}
+
+.eagle.eating {
+  animation: eagleEating 0.5s ease-in-out;
+}
+
+@keyframes eagleIdle {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(-5deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(5deg);
+  }
+}
+
+@keyframes eagleEating {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+  }
 }

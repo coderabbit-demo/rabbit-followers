@@ -9,6 +9,25 @@ interface Rabbit {
   isHovered: boolean
 }
 
+interface ExplosionParticle {
+  id: string
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+  emoji: string
+}
+
+interface Eagle {
+  id: number
+  x: number
+  y: number
+  speed: number
+  targetRabbitId: number | null
+  state: 'idle' | 'hunting' | 'eating'
+}
+
 /**
  * Main interactive React component that renders an animated scene of rabbits.
  *
@@ -30,14 +49,35 @@ function App() {
     { id: 8, x: 450, y: 150, speed: 0.022, isHovered: false },
   ])
 
+  const [explosionParticles, setExplosionParticles] = useState<ExplosionParticle[]>([])
+  const [eagle, setEagle] = useState<Eagle>({
+    id: 1,
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    speed: 0.05,
+    targetRabbitId: null,
+    state: 'idle'
+  })
+
   const mousePosRef = useRef({ x: 0, y: 0 })
   const rabbitsRef = useRef(rabbits)
+  const explosionParticlesRef = useRef(explosionParticles)
+  const eagleRef = useRef(eagle)
   const animationFrameRef = useRef<number | undefined>(undefined)
+  const explodedRabbitsRef = useRef(new Set<number>())
 
-  // Keep rabbitsRef in sync with rabbits state
+  // Keep refs in sync with state
   useEffect(() => {
     rabbitsRef.current = rabbits
   }, [rabbits])
+
+  useEffect(() => {
+    explosionParticlesRef.current = explosionParticles
+  }, [explosionParticles])
+
+  useEffect(() => {
+    eagleRef.current = eagle
+  }, [eagle])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -105,9 +145,54 @@ function App() {
       return resolvedRabbits
     }
 
+    const createExplosion = (x: number, y: number) => {
+      const particleEmojis = ['💥', '✨', '🌟', '⭐', '💫']
+      const newParticles: ExplosionParticle[] = []
+
+      for (let i = 0; i < 15; i++) {
+        const angle = (Math.PI * 2 * i) / 15
+        const speed = 2 + Math.random() * 3
+        newParticles.push({
+          id: `${Date.now()}-${i}`,
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          emoji: particleEmojis[Math.floor(Math.random() * particleEmojis.length)]
+        })
+      }
+
+      setExplosionParticles(prev => [...prev, ...newParticles])
+    }
+
+    const createEatingEffect = (x: number, y: number) => {
+      const particleEmojis = ['🪶', '💨', '✨', '💫', '☁️']
+      const newParticles: ExplosionParticle[] = []
+
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 * i) / 12
+        const speed = 1.5 + Math.random() * 2.5
+        newParticles.push({
+          id: `eating-${Date.now()}-${i}`,
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1, // Slight upward bias
+          life: 1,
+          emoji: particleEmojis[Math.floor(Math.random() * particleEmojis.length)]
+        })
+      }
+
+      setExplosionParticles(prev => [...prev, ...newParticles])
+    }
+
     const animate = () => {
       const mousePos = mousePosRef.current
       const currentRabbits = rabbitsRef.current
+      const currentEagle = eagleRef.current
+      const CURSOR_COLLISION_RADIUS = 20
+      const EAGLE_COLLISION_RADIUS = 25
 
       const newRabbits = currentRabbits.map((rabbit) => {
         const dx = mousePos.x - rabbit.x
@@ -128,7 +213,88 @@ function App() {
       })
 
       const resolvedRabbits = resolveCollisions(newRabbits)
-      setRabbits(resolvedRabbits)
+
+      // Filter out exploded rabbits from the state
+      const aliveRabbits = resolvedRabbits.filter(r => !explodedRabbitsRef.current.has(r.id))
+      setRabbits(aliveRabbits)
+
+      // Eagle behavior
+      let newEagle = { ...currentEagle }
+
+      if (currentEagle.state === 'hunting' && currentEagle.targetRabbitId !== null) {
+        // Find target rabbit
+        const targetRabbit = resolvedRabbits.find(r => r.id === currentEagle.targetRabbitId)
+
+        // Check if target still exists (wasn't exploded)
+        if (targetRabbit && !explodedRabbitsRef.current.has(currentEagle.targetRabbitId)) {
+          // Move eagle toward target
+          const dx = targetRabbit.x - currentEagle.x
+          const dy = targetRabbit.y - currentEagle.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          // Check if eagle caught the rabbit
+          if (distance < EAGLE_COLLISION_RADIUS) {
+            // Eagle caught the rabbit!
+            newEagle = {
+              ...currentEagle,
+              x: targetRabbit.x,
+              y: targetRabbit.y,
+              state: 'eating',
+              targetRabbitId: null
+            }
+
+            // Mark rabbit as exploded and create eating particles
+            explodedRabbitsRef.current.add(currentEagle.targetRabbitId)
+            createEatingEffect(targetRabbit.x, targetRabbit.y)
+
+            // Return to idle after eating animation
+            setTimeout(() => {
+              setEagle(prev => ({ ...prev, state: 'idle' }))
+            }, 500)
+          } else {
+            // Move toward target
+            newEagle = {
+              ...currentEagle,
+              x: currentEagle.x + (dx / distance) * currentEagle.speed * distance,
+              y: currentEagle.y + (dy / distance) * currentEagle.speed * distance
+            }
+          }
+        } else {
+          // Target was exploded by cursor or doesn't exist, return to idle
+          newEagle = {
+            ...currentEagle,
+            state: 'idle',
+            targetRabbitId: null
+          }
+        }
+      } else if (currentEagle.state === 'idle') {
+        // Idle hovering animation
+        const time = Date.now() * 0.001
+        newEagle = {
+          ...currentEagle,
+          x: currentEagle.x + Math.sin(time) * 0.5,
+          y: currentEagle.y + Math.cos(time * 1.3) * 0.3
+        }
+      }
+
+      setEagle(newEagle)
+
+      // Update explosion particles
+      const currentParticles = explosionParticlesRef.current
+      const updatedParticles = currentParticles
+        .map(particle => ({
+          ...particle,
+          x: particle.x + particle.vx,
+          y: particle.y + particle.vy,
+          vy: particle.vy + 0.2, // Gravity
+          life: particle.life - 0.02
+        }))
+        .filter(particle => particle.life > 0)
+
+      if (updatedParticles.length !== currentParticles.length || updatedParticles.length > 0) {
+        setExplosionParticles(updatedParticles)
+      }
+
       animationFrameRef.current = requestAnimationFrame(animate)
     }
 
@@ -149,6 +315,17 @@ function App() {
     )
   }
 
+  const handleRabbitClick = (id: number) => {
+    // Only set target if rabbit hasn't been exploded
+    if (!explodedRabbitsRef.current.has(id)) {
+      setEagle(prev => ({
+        ...prev,
+        targetRabbitId: id,
+        state: 'hunting'
+      }))
+    }
+  }
+
   return (
     <div className="app">
       <h1 className="title">Move your mouse around!</h1>
@@ -163,10 +340,33 @@ function App() {
             }}
             onMouseEnter={() => handleRabbitHover(rabbit.id, true)}
             onMouseLeave={() => handleRabbitHover(rabbit.id, false)}
+            onClick={() => handleRabbitClick(rabbit.id)}
           >
             🐰
           </div>
         ))}
+        {explosionParticles.map((particle) => (
+          <div
+            key={particle.id}
+            className="explosion-particle"
+            style={{
+              left: `${particle.x}px`,
+              top: `${particle.y}px`,
+              opacity: particle.life,
+            }}
+          >
+            {particle.emoji}
+          </div>
+        ))}
+        <div
+          className={`eagle ${eagle.state}`}
+          style={{
+            left: `${eagle.x}px`,
+            top: `${eagle.y}px`,
+          }}
+        >
+          🦅
+        </div>
       </div>
     </div>
   )

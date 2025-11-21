@@ -179,7 +179,7 @@ fi
 # Create PR on Azure DevOps
 echo -e "  Creating PR on ${YELLOW}Azure DevOps${NC}..."
 if command -v az &> /dev/null; then
-    ADO_PR_URL=$(az repos pr create \
+    ADO_PR_RESPONSE=$(az repos pr create \
       --organization https://dev.azure.com/turbulentcloud \
       --project turbulentcloud \
       --repository rabbit-followers \
@@ -187,12 +187,17 @@ if command -v az &> /dev/null; then
       --target-branch "$BASE_BRANCH" \
       --title "$PR_TITLE" \
       --description "$PR_DESCRIPTION_FULL" \
-      --query "url" -o tsv 2>&1)
+      --output json 2>&1)
 
-    if [[ $ADO_PR_URL == http* ]]; then
+    # Extract the PR ID and construct proper web URL
+    ADO_PR_ID=$(echo "$ADO_PR_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('pullRequestId', ''))" 2>/dev/null)
+
+    if [ -n "$ADO_PR_ID" ]; then
+        ADO_PR_URL="https://dev.azure.com/turbulentcloud/turbulentcloud/_git/rabbit-followers/pullrequest/$ADO_PR_ID"
         echo -e "  ${GREEN}✓ Azure DevOps PR created: $ADO_PR_URL${NC}"
     else
-        echo -e "  ${RED}✗ Failed to create Azure DevOps PR: $ADO_PR_URL${NC}"
+        echo -e "  ${RED}✗ Failed to create Azure DevOps PR${NC}"
+        echo -e "  ${RED}Response: $ADO_PR_RESPONSE${NC}"
     fi
 elif [ -f ~/.ado-token ]; then
     # Fallback to REST API if az CLI not available
@@ -206,8 +211,9 @@ elif [ -f ~/.ado-token ]; then
       https://dev.azure.com/turbulentcloud/turbulentcloud/_apis/git/repositories/rabbit-followers/pullrequests?api-version=7.0 \
       -d "{\"sourceRefName\":\"refs/heads/$BRANCH_NAME\",\"targetRefName\":\"refs/heads/$BASE_BRANCH\",\"title\":\"$PR_TITLE_ESCAPED\",\"description\":\"$PR_DESC_ESCAPED\"}")
 
-    ADO_PR_URL=$(echo "$ADO_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('_links', {}).get('web', {}).get('href', ''))" 2>/dev/null)
-    if [ -n "$ADO_PR_URL" ]; then
+    ADO_PR_ID=$(echo "$ADO_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('pullRequestId', ''))" 2>/dev/null)
+    if [ -n "$ADO_PR_ID" ]; then
+        ADO_PR_URL="https://dev.azure.com/turbulentcloud/turbulentcloud/_git/rabbit-followers/pullrequest/$ADO_PR_ID"
         echo -e "  ${GREEN}✓ Azure DevOps PR created: $ADO_PR_URL${NC}"
     else
         echo -e "  ${RED}✗ Failed to create Azure DevOps PR${NC}"
