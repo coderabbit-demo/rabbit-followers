@@ -28,6 +28,12 @@ interface Eagle {
   state: 'idle' | 'hunting' | 'eating'
 }
 
+interface Snake {
+  id: number
+  x: number
+  y: number
+}
+
 /**
  * Main interactive React component that renders an animated scene of rabbits.
  *
@@ -57,6 +63,11 @@ function App() {
     speed: 0.035,
     targetRabbitId: null,
     state: 'idle'
+  })
+  const [snake] = useState<Snake>({
+    id: 1,
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight
   })
 
   const mousePosRef = useRef({ x: 0, y: 0 })
@@ -208,8 +219,8 @@ function App() {
       const mousePos = mousePosRef.current
       const currentRabbits = rabbitsRef.current
       const currentEagle = eagleRef.current
-      const CURSOR_COLLISION_RADIUS = 20
       const EAGLE_COLLISION_RADIUS = 25
+      const SNAKE_COLLISION_RADIUS = 30
 
       const newRabbits = currentRabbits.map((rabbit) => {
         const dx = mousePos.x - rabbit.x
@@ -230,6 +241,21 @@ function App() {
       })
 
       const resolvedRabbits = resolveCollisions(newRabbits)
+
+      // Check for snake collisions
+      resolvedRabbits.forEach((rabbit) => {
+        if (!explodedRabbitsRef.current.has(rabbit.id)) {
+          const dx = rabbit.x - snake.x
+          const dy = rabbit.y - snake.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance < SNAKE_COLLISION_RADIUS) {
+            // Rabbit hit the snake!
+            explodedRabbitsRef.current.add(rabbit.id)
+            createExplosion(rabbit.x, rabbit.y)
+          }
+        }
+      })
 
       // Filter out exploded rabbits from the state
       const aliveRabbits = resolvedRabbits.filter(r => !explodedRabbitsRef.current.has(r.id))
@@ -383,6 +409,15 @@ function App() {
           }}
         >
           🦅
+        </div>
+        <div
+          className="snake"
+          style={{
+            left: `${snake.x}px`,
+            top: `${snake.y}px`,
+          }}
+        >
+          🐍
         </div>
       </div>
     </div>
