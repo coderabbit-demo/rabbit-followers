@@ -50,7 +50,13 @@ echo ""
 
 # Step 1: Create and checkout new branch
 echo -e "${YELLOW}Step 1: Creating branch '$BRANCH_NAME'...${NC}"
+# Delete branch if it already exists
+git branch -D "$BRANCH_NAME" 2>/dev/null
 git checkout -b "$BRANCH_NAME"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}✗ Failed to create branch '$BRANCH_NAME'${NC}"
+    exit 1
+fi
 echo -e "${GREEN}✓ Branch created and checked out${NC}"
 echo ""
 
