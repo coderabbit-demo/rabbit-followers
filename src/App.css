@@ -8,14 +8,89 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(34, 139, 34, 0.1) 0%, rgba(0, 100, 0, 0.1) 100%),
-    radial-gradient(circle at 20% 50%, rgba(60, 179, 113, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(46, 125, 50, 0.3) 0%, transparent 50%),
-    linear-gradient(to bottom, #5cb85c 0%, #4a9d4a 50%, #3d8b3d 100%);
-  background-size: 100% 100%, 200% 200%, 200% 200%, 100% 100%;
+  background-color: #3d7a3d;
+  background-image:
+    /* Light grass blade highlights */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(120, 200, 80, 0.15) 2px,
+      rgba(120, 200, 80, 0.15) 3px,
+      transparent 3px,
+      transparent 7px
+    ),
+    /* Dark grass blade shadows */
+    repeating-linear-gradient(
+      95deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(20, 60, 20, 0.2) 3px,
+      rgba(20, 60, 20, 0.2) 4px,
+      transparent 4px,
+      transparent 11px
+    ),
+    /* Varied grass blades - left leaning */
+    repeating-linear-gradient(
+      85deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(80, 160, 60, 0.12) 4px,
+      rgba(80, 160, 60, 0.12) 5px,
+      transparent 5px,
+      transparent 13px
+    ),
+    /* Fine texture overlay */
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px,
+      transparent 1px,
+      rgba(100, 180, 70, 0.1) 1px,
+      rgba(100, 180, 70, 0.1) 2px,
+      transparent 2px,
+      transparent 5px
+    ),
+    /* Color variation patches */
+    radial-gradient(ellipse 80px 60px at 20% 30%, rgba(100, 180, 80, 0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 100px 80px at 70% 60%, rgba(60, 140, 50, 0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 90px 70px at 40% 80%, rgba(90, 170, 70, 0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 70px 50px at 85% 20%, rgba(110, 190, 90, 0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 60px 45px at 10% 70%, rgba(70, 150, 55, 0.2) 0%, transparent 70%),
+    /* Base gradient for depth */
+    linear-gradient(
+      175deg,
+      #4a9d4a 0%,
+      #3d8b3d 30%,
+      #357a35 60%,
+      #2d6b2d 100%
+    );
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="28" font-size="28">🥕</text></svg>') 16 16, auto;
   position: relative;
+}
+
+/* Additional grass texture using pseudo-element */
+.app::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    /* Tiny grass speckles */
+    radial-gradient(circle 1px at 10% 15%, rgba(140, 210, 100, 0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 25% 45%, rgba(50, 120, 40, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 40% 25%, rgba(130, 200, 90, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 1px at 55% 70%, rgba(60, 130, 50, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 70% 35%, rgba(120, 190, 85, 0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 85% 60%, rgba(55, 125, 45, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 1px at 15% 80%, rgba(135, 205, 95, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 60% 10%, rgba(65, 135, 55, 0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 90% 85%, rgba(125, 195, 88, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 1px at 35% 95%, rgba(70, 145, 58, 0.3) 0%, transparent 100%);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .title {
@@ -34,6 +109,7 @@
   width: 100%;
   height: 100%;
   position: relative;
+  z-index: 1;
 }
 
 .rabbit {
