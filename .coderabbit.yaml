@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+reviews:
+  request_changes_workflow: true
+  high_level_summary_in_walkthrough: true
+  fail_commit_status: true
+  auto_apply_labels: true
+  auto_assign_reviewers: true
+  auto_review:
+    drafts: true
+  pre_merge_checks:
+    docstrings:
+      mode: error
+    title:
+      mode: error
+    description:
+      mode: error
+    issue_assessment:
+      mode: error
+chat:
+  integrations:
+    jira:
+      usage: enabled
+    linear:
+      usage: enabled
+knowledge_base:
+  learnings:
+    scope: global
+  issues:
+    scope: global
+  jira:
+    usage: enabled
+  linear:
+    usage: enabled
+  pull_requests:
+    scope: global
+  mcp:
+    usage: enabled
+
