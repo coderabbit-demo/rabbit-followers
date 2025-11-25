@@ -31,6 +31,7 @@ function App() {
     { id: 9, x: 250, y: 300, speed: 0.016, isHovered: false },
   ])
 
+  const [isPaused, setIsPaused] = useState(false)
   const mousePosRef = useRef({ x: 0, y: 0 })
   const rabbitsRef = useRef(rabbits)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -107,6 +108,11 @@ function App() {
     }
 
     const animate = () => {
+      if (isPaused) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+        return
+      }
+
       const mousePos = mousePosRef.current
       const currentRabbits = rabbitsRef.current
 
@@ -140,7 +146,7 @@ function App() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [])
+  }, [isPaused])
 
   const handleRabbitHover = (id: number, isHovered: boolean) => {
     setRabbits((prevRabbits) =>
@@ -153,6 +159,13 @@ function App() {
   return (
     <div className="app">
       <h1 className="title">Move your mouse around!</h1>
+      <button
+        className="pause-button"
+        onClick={() => setIsPaused(!isPaused)}
+        aria-label={isPaused ? "Play animation" : "Pause animation"}
+      >
+        {isPaused ? '▶️' : '⏸️'}
+      </button>
       <div className="rabbit-container">
         {rabbits.map((rabbit) => (
           <div
