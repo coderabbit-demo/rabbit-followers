@@ -1,6 +1,6 @@
 # Rabbit Followers
 
-A simple React + TypeScript app where rabbits follow your mouse cursor around the screen.
+A simple app where rabbits follow your carrot cursor around the screen.
 
 ## Prerequisites
 
