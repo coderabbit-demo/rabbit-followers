@@ -34,6 +34,14 @@ interface Snake {
   y: number
 }
 
+interface Pond {
+  id: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 /**
  * Main interactive React component that renders an animated scene of rabbits.
  *
@@ -70,6 +78,13 @@ function App() {
     id: 1,
     x: Math.random() * window.innerWidth,
     y: Math.random() * window.innerHeight
+  })
+  const [pond] = useState<Pond>({
+    id: 1,
+    x: window.innerWidth / 2 - 75,
+    y: window.innerHeight / 2 + 100,
+    width: 150,
+    height: 100
   })
   const mousePosRef = useRef({ x: 0, y: 0 })
   const rabbitsRef = useRef(rabbits)
@@ -216,6 +231,28 @@ function App() {
       setExplosionParticles(prev => [...prev, ...newParticles])
     }
 
+    const createDrowningEffect = (x: number, y: number) => {
+      const particleEmojis = ['💧', '💦', '🌊', '💙', '🫧']
+      const newParticles: ExplosionParticle[] = []
+
+      // Add water splash particles
+      for (let i = 0; i < 25; i++) {
+        const angle = (Math.PI * 2 * i) / 25
+        const speed = 2 + Math.random() * 3.5
+        newParticles.push({
+          id: `drowning-${Date.now()}-${i}`,
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2, // Strong upward splash
+          life: 1,
+          emoji: particleEmojis[Math.floor(Math.random() * particleEmojis.length)]
+        })
+      }
+
+      setExplosionParticles(prev => [...prev, ...newParticles])
+    }
+
     const animate = () => {
       if (isPaused) {
         animationFrameRef.current = requestAnimationFrame(animate)
@@ -259,6 +296,23 @@ function App() {
             // Rabbit hit the snake!
             explodedRabbitsRef.current.add(rabbit.id)
             createExplosion(rabbit.x, rabbit.y)
+          }
+        }
+      })
+
+      // Check for pond collisions
+      resolvedRabbits.forEach((rabbit) => {
+        if (!explodedRabbitsRef.current.has(rabbit.id)) {
+          // Check if rabbit is inside pond bounds
+          if (
+            rabbit.x >= pond.x &&
+            rabbit.x <= pond.x + pond.width &&
+            rabbit.y >= pond.y &&
+            rabbit.y <= pond.y + pond.height
+          ) {
+            // Rabbit drowned in the pond!
+            explodedRabbitsRef.current.add(rabbit.id)
+            createDrowningEffect(rabbit.x, rabbit.y)
           }
         }
       })
@@ -414,6 +468,15 @@ function App() {
             {particle.emoji}
           </div>
         ))}
+        <div
+          className="pond"
+          style={{
+            left: `${pond.x}px`,
+            top: `${pond.y}px`,
+            width: `${pond.width}px`,
+            height: `${pond.height}px`,
+          }}
+        />
         <div
           className={`eagle ${eagle.state}`}
           style={{
