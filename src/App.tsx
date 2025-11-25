@@ -28,6 +28,7 @@ function App() {
     { id: 6, x: 150, y: 400, speed: 0.025, isHovered: false },
     { id: 7, x: 350, y: 350, speed: 0.018, isHovered: false },
     { id: 8, x: 450, y: 150, speed: 0.022, isHovered: false },
+    { id: 9, x: 250, y: 300, speed: 0.016, isHovered: false },
   ])
 
   const mousePosRef = useRef({ x: 0, y: 0 })
