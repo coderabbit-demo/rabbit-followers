@@ -1,13 +1,23 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
 reviews:
+  # Enable request changes workflow for code review
   request_changes_workflow: true
+  # High-level summary in walkthrough for summarization
+  high_level_summary: true
   high_level_summary_in_walkthrough: true
+  # Sequence diagrams for visual representation
+  sequence_diagrams: true
+  # Committable suggestions
+  commit_status_enabled: true
   fail_commit_status: true
+  # Auto features
   auto_apply_labels: true
   auto_assign_reviewers: true
   auto_review:
+    enabled: true
     drafts: true
+  # Pre-merge checks
   pre_merge_checks:
     docstrings:
       mode: error
@@ -17,12 +27,14 @@ reviews:
       mode: error
     issue_assessment:
       mode: error
+
 chat:
   integrations:
     jira:
       usage: enabled
     linear:
       usage: enabled
+
 knowledge_base:
   learnings:
     scope: global
