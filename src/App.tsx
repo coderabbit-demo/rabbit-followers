@@ -172,26 +172,6 @@ function App() {
       return resolvedRabbits
     }
 
-    const createExplosion = (x: number, y: number) => {
-      const particleEmojis = ['💥', '✨', '🌟', '⭐', '💫']
-      const newParticles: ExplosionParticle[] = []
-
-      for (let i = 0; i < 15; i++) {
-        const angle = (Math.PI * 2 * i) / 15
-        const speed = 2 + Math.random() * 3
-        newParticles.push({
-          id: `${Date.now()}-${i}`,
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 1,
-          emoji: particleEmojis[Math.floor(Math.random() * particleEmojis.length)]
-        })
-      }
-
-      setExplosionParticles(prev => [...prev, ...newParticles])
-    }
 
     const createEatingEffect = (x: number, y: number) => {
       const particleEmojis = ['🪶', '💨', '✨', '💫', '☁️']
