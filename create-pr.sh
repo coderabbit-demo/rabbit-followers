@@ -132,7 +132,7 @@ if [ "$PUSHED_BB" = "1" ]; then
         PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
 
         BB_RESPONSE=$(curl -s -X POST \
-          -u "john@turbulent.cloud:$BB_API_KEY" \
+          -u "jbingham@coderabbit.ai:$BB_API_KEY" \
           -H "Content-Type: application/json" \
           https://api.bitbucket.org/2.0/repositories/demo-coderabbit/rabbit-followers/pullrequests \
           -d "{\"title\":\"$PR_TITLE_ESCAPED\",\"source\":{\"branch\":{\"name\":\"$BRANCH_NAME\"}},\"destination\":{\"branch\":{\"name\":\"$BASE_BRANCH\"}},\"description\":\"$PR_DESC_ESCAPED\"}")
