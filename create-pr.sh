@@ -132,9 +132,9 @@ if [ "$PUSHED_BB" = "1" ]; then
         PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
 
         BB_RESPONSE=$(curl -s -X POST \
-          -u "john@turbulent.cloud:$BB_API_KEY" \
+          -u "jbingham@coderabbit.ai:$BB_API_KEY" \
           -H "Content-Type: application/json" \
-          https://api.bitbucket.org/2.0/repositories/turbulentcloud/rabbit-followers/pullrequests \
+          https://api.bitbucket.org/2.0/repositories/demo-coderabbit/rabbit-followers/pullrequests \
           -d "{\"title\":\"$PR_TITLE_ESCAPED\",\"source\":{\"branch\":{\"name\":\"$BRANCH_NAME\"}},\"destination\":{\"branch\":{\"name\":\"$BASE_BRANCH\"}},\"description\":\"$PR_DESC_ESCAPED\"}")
 
         BB_PR_URL=$(echo "$BB_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('links', {}).get('html', {}).get('href', ''))" 2>/dev/null)
@@ -195,7 +195,7 @@ fi
 if [ "$PUSHED_GL" = "1" ]; then
     echo -e "  Creating PR on ${YELLOW}GitLab (gitlab.com)${NC}..."
     if command -v glab &> /dev/null; then
-        GLAB_PR_URL=$(glab mr create --repo turbulent-cloud-group/rabbit-followers \
+        GLAB_PR_URL=$(glab mr create --repo demo-coderabbit/rabbit-followers \
           --title "$PR_TITLE" \
           --description "$PR_DESCRIPTION_FULL" \
           --source-branch "$BRANCH_NAME" \
