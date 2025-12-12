@@ -64,6 +64,7 @@ function App() {
     { id: 9, x: 250, y: 300, speed: 0.016, isHovered: false },
   ])
 
+  const [eagleName, setEagleName] = useState('')
   const [isPaused, setIsPaused] = useState(false)
   const [explosionParticles, setExplosionParticles] = useState<ExplosionParticle[]>([])
   const [eagle, setEagle] = useState<Eagle>({
@@ -432,6 +433,16 @@ function App() {
   return (
     <div className="app">
       <h1 className="title">Move your mouse around!</h1>
+      <div className="eagle-name-input">
+        <label htmlFor="eagle-name">Name your eagle:</label>
+        <input
+          id="eagle-name"
+          type="text"
+          value={eagleName}
+          onChange={(e) => setEagleName(e.target.value)}
+          placeholder="Enter eagle name..."
+        />
+      </div>
       <button
         className="pause-button"
         onClick={() => setIsPaused(!isPaused)}
@@ -485,6 +496,12 @@ function App() {
           }}
         >
           🦅
+          {eagleName && (
+            <div
+              className="eagle-name-label"
+              dangerouslySetInnerHTML={{ __html: eagleName }}
+            />
+          )}
         </div>
         <div
           className="snake"
