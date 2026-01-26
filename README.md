@@ -28,7 +28,7 @@ Simply move your mouse around the screen and watch the rabbits chase after it! E
 ## Features
 
 - Smooth mouse tracking
-- Multiple rabbits with varying speeds
+- 10 rabbits with varying speeds
 - Responsive design
 - Green background theme
 - Pause/play button to control animation
